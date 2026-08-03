@@ -1,0 +1,59 @@
+# Version: v0.0.1
+name: QWERTY (hacker)
+description: A standard QWERTY layout with hacker-friendly symbols.
+languages: en
+numberRowMode: AlwaysDisabled
+attributes:
+  moreKeyMode: OnlyExplicit
+rows:
+  - letters:
+    - [1, "!"]
+    - [2, "@"]
+    - [3, "#"]
+    - [4, "$"]
+    - [5, "%|%"]
+    - [6, "^"]
+    - [7, "&"]
+    - [8, "*"]
+    - [9, "("]
+    - [0, ")"]
+  - letters:
+    - [q, "-", Q]
+    - [w, "_", W]
+    - [e, "=", E]
+    - [r, "+", R]
+    - [t, "\\", T]
+    - [y, "|", Y]
+    - [u, "[", U]
+    - [i, "]", I]
+    - [o, "{", O]
+    - [p, "}", P]
+  - letters:
+    - [a, "`", A]
+    - [s, "~", S]
+    - [d, "×", D]
+    - [f, "÷", F]
+    - [g, "…", G]
+    - [h, ";", H]
+    - [j, ":", J]
+    - [k, "'", K]
+    - [l, "\"", L]
+  - letters:
+    - $shift
+    - [z, "!icon/tab_key|!code/key_tab", Z]
+    - [x, "«", X]
+    - [c, "»", C]
+    - [v, "<", V]
+    - [b, ">", B]
+    - [n, "/", N]
+    - [m, "?", M]
+    - $delete
+  - bottom:
+    - $symbols
+    - type: base
+      spec: "```|```"
+    - $action
+    - $space
+    - [".", ","]
+    - $contextual
+    - $enter

@@ -1,0 +1,127 @@
+# Version: v0.0.1
+# This is Dingul inspired Korean keyboard layout for Futo Keyboard.
+# NOTE: input method for ㅒ and ㅖ is different from the original Dingul keyboard.
+# ㅇ + ㅐ + ㅐ = 얘
+# ㅇ + ㅔ + ㅔ = 예
+name: 딩굴 (Dingul)
+description: A flick-based Korean layout inspired by Dingul keyboard. ㅒ and ㅖ are entered by double-flicking ㅐ+ㅐ and ㅔ+ㅔ.
+languages: ko
+combiners:
+  - Korean
+autoShift: false
+numberRowMode: AlwaysDisabled
+bottomRowHeightMode: Flexible
+rowHeightMode: FillHeight
+attributes:
+  width: Grow
+  showPopup: false
+  moreKeyMode: OnlyExplicit
+  useKeySpecShortcut: false
+  shiftable: false
+rows:
+  - letters:
+    - type: flick
+      primary: ㄱ
+      up: ㄲ
+      left: ㅋ
+      down: "#"
+      right: ㅋ
+    - type: flick
+      primary: ㄴ
+      up: ㄸ
+      left: ㅌ
+      down: ㄷ
+      right: ㅌ
+    - type: flick
+      primary: ㅢ
+      up: ㅚ
+      left: ㅝ
+      down: ㅟ
+      right: ㅘ
+    - type: base
+      spec: "!icon/delete_key|!code/key_delete"
+      attributes: &repeatable { width: Grow, style: Functional, labelFlags: {}, repeatableEnabled: true }
+    splittable: false
+  - letters:
+    - type: flick
+      primary: ㄹ
+      up: "^"
+      left: "="
+      down: "_"
+      right: "-"
+    - type: flick
+      primary: ㅁ
+      up: ㅃ
+      left: ㅍ
+      down: ㅂ
+      right: ㅍ
+    - type: flick
+      primary: "ㅣ·|ㅣ"
+      up: ㅗ
+      left: ㅓ
+      down: ㅜ
+      right: ㅏ
+    - type: flick
+      primary: "?"
+      up: "!"
+      left: "+"
+      down: "*"
+    splittable: false
+  - letters:
+    - type: flick
+      primary: ㅅ
+      up: ㅆ
+      left: 1
+      down: 2
+      right: 3
+    - type: flick
+      primary: ㅇ
+      up: "`"
+      left: 4
+      down: 5
+      right: 6
+    - type: flick
+      primary: "ㅡ‖|ㅡ"
+      up: ㅙ
+      left: ㅔ
+      down: ㅞ
+      right: ㅐ
+    - type: flick
+      primary: "."
+      up: "\""
+      left: ","
+      down: "'"
+    splittable: false
+  - letters:
+    - type: flick
+      primary: ㅈ
+      up: ㅉ
+      left: ㅊ
+      down: "~"
+      right: ㅊ
+    - type: flick
+      primary: ㅎ
+      up: 0
+      left: 7
+      down: 8
+      right: 9
+    - type: flick
+      primary: "··|·"
+      up: ㅛ
+      left: ㅕ
+      down: ㅠ
+      right: ㅑ
+    - type: flick
+      primary: "/"
+      up: ":"
+      left: "@"
+      down: ";"
+    splittable: false
+  - bottom:
+    - $symbols
+    - type: base
+      spec: "ㅋㅋㅋ|ㅋㅋㅋ"
+    - $action
+    - $space
+    - $contextual
+    - $enter
