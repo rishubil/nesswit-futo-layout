@@ -7,7 +7,7 @@
 |---|---|
 | `dingul.yml` | 딩굴 방식 한글 플릭 레이아웃 |
 | `qwerty_hacker.yml` | 기호를 손보고 숫자 줄을 뺀 QWERTY |
-| `tools/build_theme.py` | 딩굴 플릭 힌트를 키에 구워 넣는 테마 빌더 ([THEME.md](THEME.md)) |
+| `tools/build_theme.py` | 딩굴 플릭 힌트(와 KBD75 시프트 문자)를 키에 구워 넣는 테마 빌더 ([THEME.md](THEME.md)) |
 
 ---
 
@@ -69,9 +69,18 @@ uv run tools/build_theme.py --layout custom0
 `dist/i.nesswit.DingulFlick.zip` 이다. 설치 절차, 앱 코드 조사 결과, 조정할 수 있는 값은
 전부 [THEME.md](THEME.md) 에 있다.
 
+테마는 모든 레이아웃의 기능키(Esc, Ctrl, Shift, Backspace …)에 배경을 깐다. 수정키의 래치·잠김
+표시는 앱 기본 그대로 보인다 ([THEME.md](THEME.md#기능키-배경)).
+
+`qwerty_kbd75.yml` 도 쓴다면 `--kbd75-layout custom0` 처럼 그 레이아웃 번호를 주면, 같은 테마에
+키마다 시프트 문자(우상단)와 Fn 기능(우하단)을 표시하는 오버레이도 들어간다. 이때 KBD75 미리보기
+`build/preview_kbd75.png` 와 `build/preview_kbd75_fn.png` 도 같이 만든다. 자세한 건
+[THEME.md](THEME.md#kbd75-시프트-문자와-fn-기능-qwerty_kbd75yml) 참고.
+
 **`dingul.yml` 을 고쳤다면 테마를 다시 빌드해야 한다.** 자동 동기화되지 않아서
 표시와 실제 입력이 어긋날 수 있다.
 
 빌드 산출물은 gitignore 대상이다. 위에 띄운 미리보기 두 장(`build/preview.png`,
-`build/preview_qwerty.png`)만 예외로 커밋한다. 쿼티 미리보기는 테마와 상관없는 도해라
-`qwerty_hacker.yml` 을 고쳤을 때도 다시 빌드하면 갱신된다.
+`build/preview_qwerty.png`)만 예외로 커밋하고, 나머지 미리보기(`preview_states.png`,
+`preview_kbd75*.png`)는 커밋하지 않는다. 미리보기는 테마를 설치했을 때 기기 화면에 가깝게 그리므로,
+`qwerty_hacker.yml` 을 고쳤을 때도 다시 빌드하면 쿼티 미리보기가 갱신된다.

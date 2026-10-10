@@ -1,0 +1,168 @@
+# Version: v0.0.5
+name: QWERTY (KBD75)
+description: A KBD75-style layout with modifier keys, an Fn layer and a cursor key, for the Linux display of the Android Terminal app.
+languages: en
+numberRowMode: AlwaysDisabled
+autoShift: false
+attributes:
+  moreKeyMode: OnlyExplicit
+# A 15-unit grid, like the number row of the KBD75. The functional keys have explicit widths, so
+# that each row is exactly 15 units wide and no key is cut off at the edge.
+overrideWidths:
+  Regular: 0.0666
+  # Tab, Backspace and the cursor key: 1.5 units
+  Custom1: 0.1
+  # Ctrl and Enter: 2 units
+  Custom2: 0.1333
+  # Shift: 2.5 units
+  Custom3: 0.1667
+  # Bottom row modifiers and the language key: 1.25 units, so that they are easy to hit
+  Custom4: 0.0833
+# The Fn key (alt page 0) is layer 1 of the VIA layout, and the next key returns to the base page.
+# The Fn functions are:
+#   1-0, -, = -> F1-F12     Tab -> Caps Lock
+#   \ -> PrtSc (SysRq)      ` -> Ins
+#   [ -> ScrLk   ] -> Pause   Backspace -> Del
+#   ' -> NumLk
+# The cursor key (Arrows) sends arrow keys when you drag it up, down, left or right.
+# With Fn, the same drag sends Home (left), End (right), PgUp (up) and PgDn (down).
+# The layout has no hints, because a key has only one hint slot. The theme built by
+# tools/build_theme.py --kbd75-layout draws the shifted character at the top right and the Fn
+# function at the bottom right of each key.
+rows:
+  - letters:
+      - {type: base, spec: "Esc|!code/keyevent_escape", attributes: {style: Functional}}
+      - {type: case, normal: "1", shifted: "!"}
+      - {type: case, normal: "2", shifted: "@"}
+      - {type: case, normal: "3", shifted: "#"}
+      - {type: case, normal: "4", shifted: "$"}
+      - {type: case, normal: "5", shifted: "%|%"}
+      - {type: case, normal: "6", shifted: "^"}
+      - {type: case, normal: "7", shifted: "&"}
+      - {type: case, normal: "8", shifted: "*"}
+      - {type: case, normal: "9", shifted: "("}
+      - {type: case, normal: "0", shifted: ")"}
+      - {type: case, normal: "-", shifted: "_"}
+      - {type: case, normal: "=", shifted: "+"}
+      - {type: case, normal: "\\", shifted: "|"}
+      - {type: case, normal: "`", shifted: "~"}
+  - letters:
+      - {type: base, spec: "!icon/tab_key|!code/key_tab", attributes: {width: Custom1, style: Functional}}
+      - q
+      - w
+      - e
+      - r
+      - t
+      - y
+      - u
+      - i
+      - o
+      - p
+      - {type: case, normal: "[", shifted: "{"}
+      - {type: case, normal: "]", shifted: "}"}
+      - {type: base, spec: "!icon/delete_key|!code/key_delete", attributes: {width: Custom1, style: Functional, repeatableEnabled: true}}
+  - letters:
+      - {type: base, spec: "Ctrl|!code/keyevent_ctrl_left", attributes: {width: Custom2, style: Functional}}
+      - a
+      - s
+      - d
+      - f
+      - g
+      - h
+      - j
+      - k
+      - l
+      - {type: case, normal: ";", shifted: ":"}
+      - {type: case, normal: "'", shifted: "\""}
+      - {type: enter, attributes: {width: Custom2}}
+  - letters:
+      - {type: shift, attributes: {width: Custom3}}
+      - z
+      - x
+      - c
+      - v
+      - b
+      - n
+      - m
+      - {type: case, normal: ",", shifted: "<"}
+      - {type: case, normal: ".", shifted: ">"}
+      - {type: case, normal: "/", shifted: "?"}
+      - {type: shift, attributes: {width: Custom3}}
+  - bottom:
+      - {type: base, spec: "Fn|!code/key_to_alt_0_layout", attributes: {width: Custom4, style: Functional}}
+      - {type: base, spec: "Super|!code/keyevent_meta_left", attributes: {width: Custom4, style: Functional}}
+      - {type: base, spec: "Alt|!code/keyevent_alt_left", attributes: {width: Custom4, style: Functional}}
+      - {type: base, spec: "!icon/action_switch_language|!code/action_switch_language", attributes: {width: Custom4, style: Functional}}
+      - $space
+      - {type: base, spec: "RAlt|!code/keyevent_alt_right", attributes: {width: Custom4, style: Functional}}
+      - {type: base, spec: "Arrows|!code/key_cursor_pad", attributes: {width: Custom1, style: Functional, showPopup: false, labelFlags: {followKeyLetterRatio: true, autoXScale: true}}}
+    attributes: {moreKeyMode: OnlyExplicit}
+altPages:
+  # Fn layer: the same rows, with the Fn functions in place of the keys listed above
+  - - letters:
+        - {type: base, spec: "Esc|!code/keyevent_escape", attributes: {style: Functional}}
+        - {type: base, spec: "F1|!code/keyevent_f1", attributes: {style: Functional}}
+        - {type: base, spec: "F2|!code/keyevent_f2", attributes: {style: Functional}}
+        - {type: base, spec: "F3|!code/keyevent_f3", attributes: {style: Functional}}
+        - {type: base, spec: "F4|!code/keyevent_f4", attributes: {style: Functional}}
+        - {type: base, spec: "F5|!code/keyevent_f5", attributes: {style: Functional}}
+        - {type: base, spec: "F6|!code/keyevent_f6", attributes: {style: Functional}}
+        - {type: base, spec: "F7|!code/keyevent_f7", attributes: {style: Functional}}
+        - {type: base, spec: "F8|!code/keyevent_f8", attributes: {style: Functional}}
+        - {type: base, spec: "F9|!code/keyevent_f9", attributes: {style: Functional}}
+        - {type: base, spec: "F10|!code/keyevent_f10", attributes: {style: Functional}}
+        - {type: base, spec: "F11|!code/keyevent_f11", attributes: {style: Functional}}
+        - {type: base, spec: "F12|!code/keyevent_f12", attributes: {style: Functional}}
+        - {type: base, spec: "PrtSc|!code/keyevent_sysrq", attributes: {style: Functional}}
+        - {type: base, spec: "Ins|!code/keyevent_insert", attributes: {style: Functional}}
+    - letters:
+        - {type: base, spec: "Caps|!code/keyevent_caps_lock", attributes: {width: Custom1, style: Functional}}
+        - q
+        - w
+        - e
+        - r
+        - t
+        - y
+        - u
+        - i
+        - o
+        - p
+        - {type: base, spec: "ScrLk|!code/keyevent_scroll_lock", attributes: {style: Functional}}
+        - {type: base, spec: "Pause|!code/keyevent_break", attributes: {style: Functional}}
+        - {type: base, spec: "Del|!code/keyevent_forward_del", attributes: {width: Custom1, style: Functional, repeatableEnabled: true}}
+    - letters:
+        - {type: base, spec: "Ctrl|!code/keyevent_ctrl_left", attributes: {width: Custom2, style: Functional}}
+        - a
+        - s
+        - d
+        - f
+        - g
+        - h
+        - j
+        - k
+        - l
+        - {type: case, normal: ";", shifted: ":"}
+        - {type: base, spec: "NumLk|!code/keyevent_num_lock", attributes: {style: Functional}}
+        - {type: enter, attributes: {width: Custom2}}
+    - letters:
+        - {type: shift, attributes: {width: Custom3}}
+        - z
+        - x
+        - c
+        - v
+        - b
+        - n
+        - m
+        - {type: case, normal: ",", shifted: "<"}
+        - {type: case, normal: ".", shifted: ">"}
+        - {type: case, normal: "/", shifted: "?"}
+        - {type: shift, attributes: {width: Custom3}}
+    - bottom:
+        - {type: base, spec: "Fn|!code/key_to_alt_0_layout", attributes: {width: Custom4, style: Functional}}
+        - {type: base, spec: "Super|!code/keyevent_meta_left", attributes: {width: Custom4, style: Functional}}
+        - {type: base, spec: "Alt|!code/keyevent_alt_left", attributes: {width: Custom4, style: Functional}}
+        - {type: base, spec: "!icon/action_switch_language|!code/action_switch_language", attributes: {width: Custom4, style: Functional}}
+        - $space
+        - {type: base, spec: "RAlt|!code/keyevent_alt_right", attributes: {width: Custom4, style: Functional}}
+        - {type: base, spec: "Nav|!code/key_nav_pad", attributes: {width: Custom1, style: Functional, showPopup: false, labelFlags: {followKeyLetterRatio: true, autoXScale: true}}}
+      attributes: {moreKeyMode: OnlyExplicit}
