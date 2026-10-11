@@ -1,8 +1,6 @@
 build/*
 !build/preview.png
 !build/preview_qwerty.png
-!build/preview_kbd75.png
-!build/preview_kbd75_fn.png
 dist/
 assets/
 __pycache__/

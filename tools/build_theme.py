@@ -3,25 +3,21 @@
 # requires-python = ">=3.11"
 # dependencies = ["PyYAML>=6.0", "Pillow>=10.0"]
 # ///
-"""dingul.yml (과 qwerty_kbd75.yml) 용 FUTO Keyboard 테마 빌더.
+"""dingul.yml 용 FUTO Keyboard 테마 빌더.
 
 딩굴 flick 키의 상/하/좌/우 문자를 키 아이콘(``[[matchrules.icon]]``)으로 구워서
 키 위에 표시하고, 모든 레이아웃의 기능키에 배경을 깐다(``[[matchrules.border]]``,
-레이어 -1). --kbd75-layout 을 주면 qwerty_kbd75.yml 의 키에 시프트 문자(우상단)와
-Fn 기능(우하단)을 키 배경 오버레이(레이어 1)로 얹는다. 레이아웃 yaml 이 진실의
-원천이므로, yaml 을 고치고 이 스크립트를 다시 돌리면 표시도 같이 갱신된다.
+레이어 -1). 레이아웃 yaml 이 진실의 원천이므로, yaml 을 고치고 이 스크립트를
+다시 돌리면 표시도 같이 갱신된다.
 
   uv run tools/build_theme.py --layout custom0
-  uv run tools/build_theme.py --layout custom9 --kbd75-layout custom0
 
 산출물:
   build/theme/           테마 zip 에 들어가는 원본 파일들
   dist/<id>.zip          FUTO Keyboard 로 임포트할 테마
   build/preview.png          딩굴 미리보기 (기기 화면 흉내)
   build/preview_qwerty.png   qwerty_hacker.yml 미리보기
-  build/preview_states.png   기능키 상태 견본 (꺼짐 / 래치 / 잠김)
-  build/preview_kbd75.png    KBD75 기본 페이지 (--kbd75-layout 을 줬을 때만)
-  build/preview_kbd75_fn.png KBD75 Fn 페이지 (같은 조건)
+  build/preview_states.png   기능키 상태 견본 (꺼짐 / 눌림 / Shift 잠김)
 
 앱 동작 근거 (futo-org/android-keyboard master):
   keyboard/KeyboardView.java:465    icon 이 있으면 label 을 그리지 않는다
@@ -50,7 +46,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 import yaml
-from PIL import Image, ImageChops, ImageDraw, ImageFilter, ImageFont
+from PIL import Image, ImageDraw, ImageFont
 
 REPO = Path(__file__).resolve().parent.parent
 
@@ -64,8 +60,7 @@ THEME_AUTHOR = "nesswit"
 THEME_VERSION = 4
 THEME_DESCRIPTION = (
     "딩굴 레이아웃 전용 테마. flick 키의 상/하/좌/우 입력 문자를 "
-    "키 아이콘으로 구워서 키 위에 표시한다. 기능키에는 배경을 깔고, KBD75 "
-    "레이아웃의 시프트 문자와 Fn 기능도 키 위에 표시할 수 있다. 색은 Atom One Dark."
+    "키 아이콘으로 구워서 키 위에 표시한다. 기능키에는 배경을 깐다. 색은 Atom One Dark."
 )
 
 # --------------------------------------------------------------------------
@@ -258,7 +253,7 @@ HEADER = """\
 #                  FUTO Keyboard Theme Configuration
 #                        Format version: 1.0
 #
-# 이 파일은 tools/build_theme.py 가 dingul.yml (과 qwerty_kbd75.yml) 에서 생성한다.
+# 이 파일은 tools/build_theme.py 가 dingul.yml 에서 생성한다.
 # 직접 고치지 말고 yaml 을 고친 뒤 스크립트를 다시 돌릴 것.
 #                      https://docs.keyboard.futo.tech/theme/advanced
 # -------------------------------------------------------------------\
@@ -523,7 +518,7 @@ def build_theme_txt(
         "# 선택자는 공백으로 나뉜 토큰의 AND 조건이다 (decodeUtils.kt:13).",
         "# `layout` 값은 keyboard.mId.mKeyboardLayoutSetName 이고, 개발자 설정으로",
         "# 추가한 커스텀 레이아웃은 추가 순서대로 custom0, custom1, ... 이 된다",
-        "# (DevLayoutEditor.kt:95). --layout / --kbd75-layout 으로 맞춰 다시 빌드할 것.",
+        "# (DevLayoutEditor.kt:95). --layout 으로 맞춰 다시 빌드할 것.",
         "# 같은 키에 걸리는 규칙이 여럿이면 먼저 나온 것만 쓰인다.",
         "# -------------------------------------------------------------------",
         "",
@@ -539,9 +534,8 @@ def build_theme_txt(
 
     out += [
         "",
-        "# 키 배경. layer -1 은 앱 기본 배경 아래(기능키 배경), layer 1 은 위(KBD75 시프트",
-        "# 문자 / Fn 기능 오버레이)에 그려진다. 레이어 0 은 앱 기본 스타일 그대로라 눌림,",
-        "# 래치, 잠김 표시가 살아 있다.",
+        "# 키 배경. layer -1 은 앱 기본 배경 아래에 그려진다 (기능키 배경). 레이어 0 은",
+        "# 앱 기본 스타일 그대로라 눌림, Shift 잠김 표시가 살아 있다.",
     ]
     for tokens, asset in border_rules:
         out += [
@@ -747,9 +741,9 @@ def render_qwerty_preview(yml_path: Path, path: Path) -> list[str]:
 # --------------------------------------------------------------------------
 # 기기 실측값
 #
-# 1080x2400 에뮬레이터에 이 테마(v3)와 qwerty_kbd75.yml 을 깐 스크린샷과, 테마 없이
-# 기본 키 배경을 켠 스크린샷에서 쟀다. 미리보기와 KBD75 오버레이 크기가 전부 여기서
-# 나오므로, 다른 기기에 맞추려면 이 값만 다시 재면 된다.
+# 1080x2400 에뮬레이터에 이 테마(v3)와 다섯 줄짜리 레이아웃을 깐 스크린샷과, 테마 없이
+# 기본 키 배경을 켠 스크린샷에서 쟀다. 미리보기 크기가 전부 여기서 나오므로, 다른 기기에
+# 맞추려면 이 값만 다시 재면 된다.
 # --------------------------------------------------------------------------
 
 DEVICE_W = 1080  # 화면 폭 (px)
@@ -773,9 +767,9 @@ SPACE_RADIUS_DP = 48.0  # 스페이스바
 ACTION_RADIUS_DP = 128.0  # 엔터 (사실상 알약 모양)
 ICON_INTRINSIC_DP = 24.0  # 앱 기본 아이콘(벡터)의 고유 크기
 
-# 키보드 영역 (액션 바 아래). KBD75 에서 쟀다. 첫 줄 키 윗변이 영역 위에서 14px, 줄 간격
-# 137.5, 위 네 줄 키 높이 114, 아래 줄 키 높이 137, 영역 높이 725. 딩굴과 qwerty_hacker 도
-# 다섯 줄이라 같은 값을 쓴다 (키보드 높이 설정이 같으면 줄 높이도 같다).
+# 키보드 영역 (액션 바 아래). 다섯 줄짜리 레이아웃에서 쟀다. 첫 줄 키 윗변이 영역 위에서
+# 14px, 줄 간격 137.5, 위 네 줄 키 높이 114, 아래 줄 키 높이 137, 영역 높이 725. 딩굴과
+# qwerty_hacker 도 다섯 줄이라 같은 값을 쓴다 (키보드 높이 설정이 같으면 줄 높이도 같다).
 KB_TOP = 14
 KB_ROW_PITCH = 137.5
 KB_KEY_H = 114
@@ -786,9 +780,9 @@ KB_AREA_H = 725
 # 비율의 기준은 키마다가 아니라 키보드 전체에서 가장 흔한 키 크기다. v2 레이아웃 키에는
 # visualAttributes 가 없어서 mayCloneAndUpdateParams 가 그대로 돌려주고
 # (KeyboardView.java:390), 키보드 단위 값은 min(mostCommonKeyWidth, mostCommonKeyHeight)
-# 로 정해진다 (KeyboardView.java:210-214, LayoutEngine.kt:818). KBD75 는 72 다.
+# 로 정해진다 (KeyboardView.java:210-214, LayoutEngine.kt:818).
 KEY_LETTER_RATIO = 0.66  # 한 글자 라벨, Normal 스타일 (mLetterSize)
-KEY_LABEL_RATIO = 0.34  # 여러 글자 라벨, 아이콘 키 (mLabelSize. Esc, Ctrl …)
+KEY_LABEL_RATIO = 0.34  # 여러 글자 라벨, 아이콘 키 (mLabelSize. ?123 …)
 KEY_HINT_LETTER_RATIO = 0.30  # 우상단 힌트 (mHintLetterSize)
 KEY_LARGE_LETTER_RATIO = 0.90  # labelFlags.followKeyLargeLetterRatio (mLargeLetterSize)
 KEY_HINT_LABEL_RATIO = 0.30  # labelFlags.followKeyHintLabelRatio (mHintLabelSize)
@@ -803,15 +797,15 @@ def dp(v: float) -> float:
 # --------------------------------------------------------------------------
 # 기능키 배경
 #
-# auto_borders = false 라 기능키(Esc, Ctrl, Tab, Shift …)는 기본 스타일 배경이 투명하다.
+# auto_borders = false 라 기능키(Shift, Backspace, ?123 …)는 기본 스타일 배경이 투명하다.
 # 그래서 `[[matchrules.border]]` 로 둥근 사각형을 깔아 준다. 이때 두 가지를 지켜야 한다.
 #
-# - 수정키 상태가 보여야 한다. 래치된 수정키는 pressed 로, 잠긴 수정키는 StickyOn 스타일로
-#   그려지는데 (Key.kt drawnVisualStyle), 선택자의 `functional` 은 원래 스타일
-#   (key.visualStyle) 을 보므로 잠김을 구분하지 못한다. 그래서 배경을 레이어 -1 에 둔다.
-#   레이어는 오름차순으로 그려지고 (KeyboardView.java:325), 레이어 0 은 앱 기본 스타일
-#   그대로라 꺼짐은 투명, 래치(pressed)는 keyboard_container_pressed, 잠김은 secondary 가
-#   우리 배경 위를 덮는다. 즉 세 상태가 앱 기본 테마와 같은 방식으로 구분된다.
+# - 눌림 표시가 보여야 한다. 레이어 0 에 테마 배경이 걸리면 앱은 키의 기본 배경
+#   (Key.kt:367 selectBackground, 눌림 배경 포함) 대신 그걸 쓴다 (AdvancedThemeCustomizer.kt:145).
+#   그래서 배경을 레이어 -1 에 둔다. 레이어는 오름차순으로 그려지고 (KeyboardView.java:325),
+#   레이어 0 은 앱 기본 스타일 그대로라 꺼짐은 투명, 눌림은 keyboard_container_pressed 가
+#   우리 배경 위를 덮는다. 잠긴 Shift 는 원래 스타일이 StickyOn 이라 (TemplateKeys.kt:64)
+#   `functional` 선택자에 걸리지 않고 앱 기본 배경(secondary)으로 그려진다.
 # - 레이어 -1 에서는 글자를 그리지 않는다. foreground_tint 가 그 레이어의 글자색이 되므로
 #   (AdvancedThemeCustomizer.kt:146) 알파 0 으로 두면 onDrawKeyTopVisuals 를 건너뛴다
 #   (KeyboardView.java:406).
@@ -822,9 +816,9 @@ FUNC_BG_DENSITY = 640  # 자산 기준 밀도. 9dp 모서리가 36px 이 된다
 FUNC_BG_SIZE = 96
 FUNC_BG_TINT = "keyboard_container"  # 기능키 배경색 (#3a3f4b). 배경 #282c34 보다 조금 밝다
 NO_TEXT_TINT = "#00000000"
-# 앱 기본 스타일 (BasicThemeProvider.kt:308, 495-535)
-PRESSED_BG = "keyboard_container_pressed"  # 눌림/래치 배경 = 스페이스바 색
-STICKY_ON_BG, STICKY_ON_FG = "secondary", "on_secondary"  # 잠김
+# 앱 기본 스타일 (BasicThemeProvider.kt:308, 479-535)
+PRESSED_BG = "keyboard_container_pressed"  # 눌림 배경 = 스페이스바 색
+STICKY_ON_BG, STICKY_ON_FG = "secondary", "on_secondary"  # Shift 잠김 (StickyOn)
 PRESSED_FG = "on_keyboard_container_pressed"
 
 
@@ -836,9 +830,9 @@ class BorderAsset:
     image: Image.Image
     target_density: float
     slicing: tuple[float, float, float, float]
-    background_tint: str = "#ffffff"  # 흰색이면 틴트하지 않는다 (NinePatchBuilder.kt:144)
+    background_tint: str = "#ffffff"  # 흰색이면 틴트하지 않는다 (NinePatchBuilder.kt:142)
     foreground_tint: str = NO_TEXT_TINT
-    padding: tuple[float, float, float, float] = (0.0, 0.0, 1.0, 1.0)  # 여백 없음 (Toml.kt:389-392)
+    padding: tuple[float, float, float, float] = (0.0, 0.0, 1.0, 1.0)  # 여백 없음 (Toml.kt:383-386)
 
 
 def render_func_bg() -> BorderAsset:
@@ -857,49 +851,9 @@ def render_func_bg() -> BorderAsset:
     )
 
 
-# 기능키 배경 선택자. Shift 는 Functional, 잠긴 Shift 는 StickyOn 이다 (TemplateKeys.kt:44-66).
+# 기능키 배경 선택자. Shift 는 Functional, 잠긴 Shift 는 StickyOn 이다 (TemplateKeys.kt:44-76).
 # stickyoff 는 지금 템플릿에서 안 쓰지만 같은 모양이어야 하므로 같이 넣는다.
 FUNC_BG_SELECTORS = [("layer", "-1", "functional"), ("layer", "-1", "stickyoff")]
-
-
-# --------------------------------------------------------------------------
-# KBD75 시프트 문자 / Fn 기능 오버레이
-#
-# qwerty_kbd75.yml 의 키에 실물 키캡처럼 시프트 문자(우상단)와 Fn 기능(우하단)을 늘 보이게
-# 한다. 가운데 라벨과 Tab/Backspace 아이콘은 앱이 평소대로 그린다.
-#
-# 아이콘(`[[matchrules.icon]]`)이 아니라 키 배경(`[[matchrules.border]]`)을 쓴다.
-# 아이콘은 한 변이 min(키 폭, 1.75 x textSize) 인 정사각형이라 이 레이아웃에서는 60x60 에
-# 갇혀서 높이 114 짜리 키의 모서리에 닿지 못하고 (Tab 같은 1.5칸 키는 42x42), 가운데 라벨까지
-# 직접 그려야 한다. 키 배경은 키 전체에 9-patch 로 깔리므로 글자를 모서리에 두고 가운데
-# 빈 줄만 늘리면 키 크기가 달라도 글자 모양이 그대로다.
-#
-# 오버레이는 레이어 1 에 둔다. 레이어 0(앱 기본 배경과 라벨) 위에 그려지므로 눌림/래치 배경에
-# 가려지지 않는다. 레이어 1 에서도 foreground_tint 알파 0 으로 글자를 다시 그리지 않는다.
-# --------------------------------------------------------------------------
-
-# 오버레이 PNG 배율. 기기 px 의 이 배수로 그리고 target_density 도 같이 올린다.
-OVERLAY_SS = 3
-# 오버레이를 구울 키 높이. 9-patch 는 늘릴 줄은 알아도 줄이면 전체가 균일하게 작아지므로
-# (NinePatchUniformCornerDrawable) 예상 범위의 최솟값으로 굽고, 실제 키에서는 가운데 빈 줄을
-# 늘린다. 겹침 검사는 이 범위 양 끝에서 한다.
-KBD75_KEY_H_RANGE = (100, 130)
-
-
-def key_h_range(bottom: bool) -> tuple[float, float]:
-    """키 높이 범위. 아래 줄 키는 실측상 더 크므로(137 / 114) 같은 비율로 늘린다."""
-    if not bottom:
-        return KBD75_KEY_H_RANGE
-    r = KB_BOTTOM_KEY_H / KB_KEY_H
-    return tuple(round(h * r) for h in KBD75_KEY_H_RANGE)
-
-# 시프트 문자 크기 (힌트 크기 대비). 기호는 같은 크기의 F1 같은 글자보다 잉크가 작아서
-# (`*` `^` `~`) 조금 키운다.
-KBD75_SHIFT_SCALE = 1.15
-# 글자끼리 최소 간격 (키 px). 이보다 가까우면 경고한다.
-KBD75_MIN_GAP = 2.0
-# 오버레이 글자색. 앱 힌트 색과 같다 (BasicThemeProvider.kt:304 hintColor).
-KBD75_OVERLAY_COLOR = "on_surface_variant"
 
 
 @dataclass
@@ -910,34 +864,14 @@ class KeyDef:
     col: int
     units: float | None  # Regular 키 대비 폭. None 은 남은 폭을 채우는 스페이스
     style: str  # normal | functional | action | spacebar
-    ident: str  # 기본 페이지와 Fn 페이지를 비교할 때 쓰는 값 (스펙 문자열)
+    ident: str  # 키를 구분하는 값 (스펙 문자열)
     label: str | None = None  # 앱이 그리는 라벨
     icon: str | None = None  # 앱이 그리는 아이콘 ID (tab_key …)
     hint: str | None = None  # 앱이 그리는 우상단 힌트
-    shifted: str | None = None  # 시프트 상태 라벨 (case 키)
-    fn: str | None = None  # Fn 페이지의 같은 자리 기능
     hint_icon: str | None = None  # 앱이 우상단에 그리는 힌트 아이콘 (롱프레스 첫 키가 아이콘일 때)
-    code: str | None = None  # 스펙의 `|` 뒤 코드 (`!code/key_cursor_pad` 등)
     label_flags: dict | None = None  # yaml attributes.labelFlags (글자/아이콘 크기를 정한다)
     theme_icon: Image.Image | None = None  # 이 테마의 아이콘 (딩굴 flick 키). 라벨을 대신한다
-    state: str = "off"  # 미리보기용 상태: off | pressed (눌림·래치) | locked (잠김)
-
-    @property
-    def selector(self) -> tuple[str, str] | None:
-        """이 키를 지목하는 선택자 토큰. 라벨이 있으면 라벨, 아니면 아이콘 ID."""
-        if self.label is not None:
-            return ("label", self.label)
-        if self.icon is not None:
-            return ("icon", self.icon)
-        return None
-
-    @property
-    def asset_name(self) -> str:
-        return f"kbd75_r{self.row}c{self.col}.png"
-
-    @property
-    def shifted_asset_name(self) -> str:
-        return f"kbd75_r{self.row}c{self.col}_shifted.png"
+    state: str = "off"  # 미리보기용 상태: off | pressed (눌림) | locked (Shift 잠김)
 
 
 def app_spec_label(spec) -> str:
@@ -1010,13 +944,9 @@ def parse_key(entry, row: int, col: int, widths: dict[str, float]) -> KeyDef:
     flags = attrs.get("labelFlags") if isinstance(attrs.get("labelFlags"), dict) else None
     if kind == "case":
         normal = case_side(entry.get("normal"))
-        shifted = case_side(entry.get("shifted"))
         key = KeyDef(row, col, units, style, f"case:{entry.get('normal')}")
         if normal:
             key.label, key.hint = normal
-        if normal and shifted and len(normal[0]) == 1 and len(shifted[0]) == 1:
-            if normal[0] != shifted[0]:
-                key.shifted = shifted[0]
         return key
     if kind == "flick":
         return KeyDef(row, col, units, "normal", str(entry.get("primary")), label=spec_label(entry["primary"]))
@@ -1029,8 +959,6 @@ def parse_key(entry, row: int, col: int, widths: dict[str, float]) -> KeyDef:
         key = KeyDef(row, col, units, style, spec, label_flags=flags)
         hint = entry.get("hint")
         key.hint = None if hint is None else str(hint)
-        if "|" in spec:
-            key.code = spec.split("|", 1)[1]
         if spec.startswith("!icon/"):
             key.icon = spec[len("!icon/"):].split("|")[0]
         else:
@@ -1045,83 +973,6 @@ def parse_page(rows, widths: dict[str, float]) -> list[list[KeyDef]]:
         entries = row.get("letters") or row.get("bottom") or []
         page.append([parse_key(e, r, c, widths) for c, e in enumerate(entries)])
     return page
-
-
-@dataclass
-class Kbd75Layout:
-    base: list[list[KeyDef]]
-    fn: list[list[KeyDef]] | None
-    keys: list[KeyDef]  # 오버레이가 필요한 기본 페이지 키
-    warnings: list[str]
-
-
-def load_kbd75(yml_path: Path) -> Kbd75Layout:
-    """기본 페이지를 읽고, Fn 페이지(altPages[0])와 자리별로 비교해 Fn 기능을 붙인다."""
-    doc = yaml.safe_load(yml_path.read_text(encoding="utf-8"))
-    widths = doc.get("overrideWidths", {"Regular": 0.1})
-    base = parse_page(doc["rows"], widths)
-    alt = doc.get("altPages") or []
-    fn = parse_page(alt[0], widths) if alt else None
-    warnings: list[str] = []
-
-    if fn is not None:
-        if len(fn) != len(base):
-            warnings.append(f"KBD75 Fn 페이지 줄 수({len(fn)})가 기본 페이지({len(base)})와 다르다")
-        for brow, frow in zip(base, fn):
-            if len(brow) != len(frow):
-                warnings.append(
-                    f"KBD75 {brow[0].row}번 줄의 키 수가 Fn 페이지와 다르다 "
-                    f"({len(brow)} / {len(frow)}). 자리별 비교가 어긋날 수 있다."
-                )
-            for b, f in zip(brow, frow):
-                if b.ident == f.ident:
-                    continue
-                if f.label is None:
-                    warnings.append(f"KBD75 r{b.row}c{b.col}: Fn 키에 라벨이 없어 표시할 수 없다 ({f.ident})")
-                    continue
-                b.fn = f.label
-
-    keys = [k for row in base for k in row if k.shifted or k.fn]
-    for k in keys:
-        sel = k.selector
-        if sel is None:
-            warnings.append(f"KBD75 r{k.row}c{k.col}: 라벨도 아이콘도 없어 선택자로 지목할 수 없다")
-        elif " " in sel[1] or not sel[1]:
-            warnings.append(f"KBD75 r{k.row}c{k.col}: {sel[1]!r} 는 공백 때문에 지목할 수 없다")
-        if k.hint:
-            warnings.append(
-                f"KBD75 r{k.row}c{k.col}: 앱 힌트 {k.hint!r} 가 우상단 시프트 문자와 겹친다. "
-                "yaml 에서 hint 를 지울 것."
-            )
-
-    # 선택자는 레이아웃 전체(기본/Fn 페이지)에 걸리므로, 같은 라벨·아이콘을 가진 다른 키가
-    # 있으면 거기에도 오버레이가 붙는다. 같은 키(Fn 페이지의 `;` `,` `.` `/`)면 괜찮다.
-    base_ids = {id(x) for row in base for x in row}
-    all_keys = [x for page in ([base] + ([fn] if fn else [])) for row in page for x in row]
-    for k in keys:
-        if k.selector is None:
-            continue
-        for other in all_keys:
-            if other is k or other.selector != k.selector:
-                continue
-            if other.ident != k.ident:
-                warnings.append(
-                    f"KBD75 선택자 {' '.join(k.selector)} 가 r{other.row}c{other.col} "
-                    f"({other.ident}) 에도 걸린다"
-                )
-            elif k.fn and id(other) not in base_ids:
-                warnings.append(
-                    f"KBD75 {k.selector[1]!r}: Fn 페이지의 같은 키에도 Fn 표시 {k.fn!r} 가 붙는다"
-                )
-        # 시프트 상태에서는 라벨이 시프트 문자로 바뀌므로 그 라벨로 Fn 표시만 따로 붙인다.
-        if k.shifted and k.fn:
-            for other in all_keys:
-                if other.label == k.shifted:
-                    warnings.append(
-                        f"KBD75 시프트 상태 선택자 label {k.shifted} 가 "
-                        f"r{other.row}c{other.col} 에도 걸린다"
-                    )
-    return Kbd75Layout(base, fn, keys, warnings)
 
 
 # --------------------------------------------------------------------------
@@ -1202,11 +1053,6 @@ def app_hint_x(text: str, font, key_w: float, pad: float) -> float:
     return key_w - pad - max(ink_w("8", font), ink_w(text, font)) / 2
 
 
-def ink_mask(alpha: Image.Image) -> Image.Image:
-    """알파(L)에서 안티앨리어싱 가장자리를 뺀 잉크 마스크."""
-    return alpha.point(lambda v: 255 if v > 48 else 0)
-
-
 # 앱 아이콘 흉내. 값은 아이콘 정사각형(한 변 42px) 안에서 실제 글리프가 차지하는 비율로,
 # 스크린샷에서 잰 글리프 폭(Tab 36, Backspace 38, Shift 37, 지구본 38, 엔터 34)에서 왔다.
 APP_ICONS = {
@@ -1255,284 +1101,12 @@ def draw_app_center(draw, key: KeyDef, box, ts: TextSizes, color, scale: float) 
         APP_ICONS[key.icon](draw, cx, cy, side, color, max(1, round(3.0 * scale)))
 
 
-def render_overlay(key: KeyDef, w: float, h: float, ts: TextSizes, with_shifted: bool = True):
-    """KBD75 오버레이 한 장 (w x h, ts 와 같은 배율). (이미지, {이름: 알파}, 경고).
-
-    우상단 시프트 문자는 앱 힌트 자리 그대로 (가로 중심과 baseline 모두 KeyboardView 의
-    힌트 계산), 우하단 Fn 기능은 그걸 위아래로 뒤집은 자리다. 긴 Fn 이름은 키 안쪽 폭
-    (키 폭 - 여백 x 2)에 맞게 줄인다.
-    """
-    color = rgb(KBD75_OVERLAY_COLOR)
-    layers: dict[str, Image.Image] = {}
-    warnings: list[str] = []
-    size = (round(w), round(h))
-    pad = ts.hint_pad
-    weight = OPTIONS["weight_hints"]
-
-    if with_shifted and key.shifted:
-        font = make_font(round(ts.hint * KBD75_SHIFT_SCALE), weight)
-        ascent, _ = font.getmetrics()
-        layer = Image.new("L", size, 0)
-        ImageDraw.Draw(layer).text(
-            (app_hint_x(key.shifted, font, w, pad), ascent + pad),
-            key.shifted, font=font, anchor="ms", fill=255,
-        )
-        layers["shifted"] = layer
-
-    if key.fn:
-        font = make_font(round(ts.hint), weight)
-        room = w - 2 * pad
-        if ink_w(key.fn, font) > room:
-            font = make_font(int(font.size * room / ink_w(key.fn, font)), weight)
-        ascent, _ = font.getmetrics()
-        # 위쪽 힌트의 "키 윗변 ~ 대문자 윗변" 간격을 아래쪽 "baseline ~ 키 아랫변" 에 그대로 쓴다
-        baseline = h - pad - (ascent - cap_h(font))
-        layer = Image.new("L", size, 0)
-        ImageDraw.Draw(layer).text(
-            (app_hint_x(key.fn, font, w, pad), baseline), key.fn, font=font, anchor="ms", fill=255
-        )
-        layers["fn"] = layer
-
-    img = Image.new("RGBA", size, color + (0,))
-    alpha = Image.new("L", size, 0)
-    for name, layer in layers.items():
-        box = layer.getbbox()
-        if box is None:
-            warnings.append(f"KBD75 {key.ident}: {name} 글자가 그려지지 않았다")
-        elif box[0] <= 0 or box[1] <= 0 or box[2] >= size[0] or box[3] >= size[1]:
-            warnings.append(f"KBD75 {key.ident}: {name} 글자가 키 밖으로 잘린다 {box}")
-        alpha = ImageChops.lighter(alpha, layer)
-    img.putalpha(alpha)
-    return img, layers, warnings
-
-
-def overlay_slicing(w: float, h: float) -> tuple[float, float, float, float]:
-    """늘릴 영역 (키 px 기준 비율): 왼쪽 가장자리 1~4px 세로 띠와 가운데 6px 가로 띠.
-
-    글자는 여기 오지 않는다 (글자는 힌트 여백 6.6px 안쪽, 위아래 모서리에만 있다).
-    앱은 비율에 실제 px 크기를 곱해 반올림하므로 (Toml.kt:385) 0px 이 되지 않게 몇 px 씩 둔다.
-    """
-    x0, x1 = 1.0, 4.0
-    y0, y1 = h / 2 - 3, h / 2 + 3
-    return (x0 / w, y0 / h, x1 / w, y1 / h)
-
-
-def ninepatch_resize(img: Image.Image, slicing, new_w: int, new_h: int) -> Image.Image:
-    """앱의 9-patch 처럼 늘릴 영역만 늘린다 (늘릴 영역이 축마다 하나일 때)."""
-    w, h = img.size
-    xs = [0, round(slicing[0] * w), round(slicing[2] * w), w]
-    ys = [0, round(slicing[1] * h), round(slicing[3] * h), h]
-    nxs = [0, xs[1], new_w - (w - xs[2]), new_w]
-    nys = [0, ys[1], new_h - (h - ys[2]), new_h]
-    out = Image.new(img.mode, (new_w, new_h), (0, 0, 0, 0))
-    for i in range(3):
-        for j in range(3):
-            piece = img.crop((xs[i], ys[j], xs[i + 1], ys[j + 1]))
-            tw, th = nxs[i + 1] - nxs[i], nys[j + 1] - nys[j]
-            if piece.width <= 0 or piece.height <= 0 or tw <= 0 or th <= 0:
-                continue
-            out.paste(piece.resize((tw, th), Image.NEAREST), (nxs[i], nys[j]))
-    return out
-
-
-def kbd75_metrics(yml_widths: dict[str, float]) -> tuple[float, float]:
-    """(칸 폭, 글자 크기 기준). 칸 폭 = Regular x 화면 폭, 기준 = min(칸 폭, 키 높이)."""
-    cell = yml_widths["Regular"] * DEVICE_W
-    return cell, min(round(cell), KB_KEY_H)
-
-
-def key_box_w(key: KeyDef, cell: float, fill_units: float = 0) -> float:
-    units = key.units if key.units is not None else fill_units
-    return units * cell - KEY_GAP_X
-
-
-def check_kbd75_key(key: KeyDef, cell: float, base: float, bottom: bool = False) -> list[str]:
-    """키 높이 범위 양 끝에서 가운데(앱)/우상단/우하단/앱 힌트가 서로 너무 가까운지 본다."""
-    warnings: list[str] = []
-    ts = text_sizes(base, SS)
-    w = round(key_box_w(key, cell) * SS)
-    for key_h in key_h_range(bottom):
-        h = round(key_h * SS)
-        _, layers, _ = render_overlay(key, w, h, ts)
-        center = Image.new("L", (w, h), 0)
-        if key.theme_icon is not None:
-            side = app_theme_icon_side(key, w, ts)
-            center.paste(
-                key.theme_icon.getchannel("A").resize((side, side), Image.LANCZOS),
-                (round((w - side) / 2), round((h - side) / 2)),
-            )
-        else:
-            draw_app_center(ImageDraw.Draw(center), key, (0, 0, w, h), ts, 255, SS)
-        masks = {n: ink_mask(v) for n, v in layers.items()}
-        masks["center"] = ink_mask(center)
-        if key.hint:
-            hint = Image.new("L", (w, h), 0)
-            font = make_font(round(ts.hint), OPTIONS["weight_hints"])
-            ascent, _ = font.getmetrics()
-            ImageDraw.Draw(hint).text(
-                (app_hint_x(key.hint, font, w, ts.hint_pad), ascent + ts.hint_pad),
-                key.hint, font=font, anchor="ms", fill=255,
-            )
-            masks["hint"] = ink_mask(hint)
-        grow = 2 * round(KBD75_MIN_GAP * SS) + 1
-        names = list(masks)
-        for i, a in enumerate(names):
-            for b in names[i + 1:]:
-                hit = ImageChops.multiply(masks[a].filter(ImageFilter.MaxFilter(grow)), masks[b])
-                if hit.getbbox():
-                    warnings.append(
-                        f"KBD75 {key.ident}: {a} 와 {b} 가 {KBD75_MIN_GAP}px 보다 가깝다 "
-                        f"(키 높이 {key_h})"
-                    )
-    return warnings
-
-
 def app_theme_icon_side(key: KeyDef, key_w: float, ts: TextSizes) -> int:
     """테마 아이콘의 한 변: min(고유 크기, 키 폭, 1.75 x textSize) (KeyboardView.java:596-606).
 
     textSize 는 key_text_size() (labelFlags 반영). 고유 크기(PNG 폭)는 따로 검사한다.
     """
     return int(min(key_w, 1.75 * key_text_size(key, ts)))
-
-
-# --------------------------------------------------------------------------
-# KBD75 커서 키 아이콘
-#
-# 커서 키(`!code/key_cursor_pad`, 라벨 Arrows)와 Fn 페이지의 같은 자리(`!code/key_nav_pad`,
-# 라벨 Nav)는 키를 상하좌우로 끌어서 쓰는 키라, 라벨 대신 방향별 기호를 십자로 놓은 아이콘을
-# 씌운다 (`[[matchrules.icon]]`, 아이콘은 라벨을 대체한다). 테마가 없으면 yaml 의 라벨이 그대로 보인다.
-#
-# - 커서 키: ↑ ↓ ← → 화살표 넷 (D-pad).
-# - Nav 키: 위 PgUp ⇞, 아래 PgDn ⇟, 왼쪽 Home ⇱, 오른쪽 End ⇲. Pretendard 에 ⇱ ⇲ 가 없고
-#   글꼴마다 모양이 달라서, 넷 다 같은 획 굵기의 벡터로 그린다.
-#
-# 아이콘 한 변은 1.75 x textSize 이고 textSize 는 키의 labelFlags 로 정해진다 (key_text_size).
-# 플래그가 없으면 여러 글자 라벨이라 mLabelSize(24px) -> 42px, v0.0.5 처럼
-# followKeyLetterRatio 를 주면 mLetterSize(47px) -> 82px 다. 도형은 42px 기준으로 설계했고
-# (CURSOR_DESIGN_PX), PNG 는 그 3배(126px)라 82px 까지는 고유 크기에 걸리지 않는다. 앱은 PNG 를
-# 단색(글자색)으로 틴트하고 bilinear 로 줄여 그린다. 768px 처럼 너무 크게 만들면 그 축소에서 가는
-# 획이 깨질 수 있다. 필요한 크기가 PNG 보다 크면 빌더가 경고한다.
-# --------------------------------------------------------------------------
-
-CURSOR_ICON_CODES = {"!code/key_cursor_pad": "arrows", "!code/key_nav_pad": "nav"}
-CURSOR_ICON_SS = 3  # PNG 배율 (기기 px 대비)
-CURSOR_STROKE = 2.4  # 획 굵기 (기기 px). 옆 라벨(24px, weight 400)의 획과 비슷하다
-
-
-CURSOR_DESIGN_PX = 42  # 도형 좌표·획 굵기의 기준 한 변 (기기 px). PNG 는 이것의 CURSOR_ICON_SS 배
-
-
-def render_cursor_icon(kind: str, side: float) -> Image.Image:
-    """커서/Nav 아이콘. side 는 기기 px 한 변. 흰색 + 알파 (앱이 글자색으로 틴트한다)."""
-    k = CURSOR_ICON_SS * 4  # 4배로 그려서 줄인다 (ImageDraw 는 안티앨리어싱이 없다)
-    n = round(side * k)
-    img = Image.new("L", (n, n), 0)
-    d = ImageDraw.Draw(img)
-    c = n / 2
-    sw = CURSOR_STROKE * k
-    white = 255
-
-    def line(points):
-        d.line([(c + x * k, c + y * k) for x, y in points], fill=white, width=round(sw), joint="curve")
-        for x, y in (points[0], points[-1]):  # 둥근 끝
-            r = sw / 2
-            d.ellipse([c + x * k - r, c + y * k - r, c + x * k + r, c + y * k + r], fill=white)
-
-    def head(tip, direction, length=5.5, width=7.0):
-        """tip 에서 direction (단위 벡터) 쪽을 가리키는 채운 삼각형."""
-        dx, dy = direction
-        bx, by = tip[0] - dx * length, tip[1] - dy * length
-        px, py = -dy * width / 2, dx * width / 2
-        d.polygon(
-            [(c + tip[0] * k, c + tip[1] * k), (c + (bx + px) * k, c + (by + py) * k), (c + (bx - px) * k, c + (by - py) * k)],
-            fill=white,
-        )
-
-    dirs = {"up": (0, -1), "down": (0, 1), "left": (-1, 0), "right": (1, 0)}
-    half = side / 2 - 1.5  # 아이콘 가장자리 여백
-
-    if kind == "arrows":
-        inner = 4.5
-        for vx, vy in dirs.values():
-            tip = (vx * half, vy * half)
-            line([(vx * inner, vy * inner), (vx * (half - 4), vy * (half - 4))])
-            head(tip, (vx, vy))
-    else:
-        g = 5.6  # 기호 하나의 반폭 (기기 px)
-        r = half - g  # 기호 중심까지 거리
-        # PgUp ⇞ / PgDn ⇟: 화살표 줄기를 가로지르는 짧은 두 줄. 좌우 기호는 가운데 높이에만
-        # 있으므로 위아래 기호는 세로로 더 길게 (가운데에서 5.5px 까지) 쓴다.
-        for sign in (-1, 1):
-            tip = (0, sign * half)
-            head(tip, (0, sign), length=4.8, width=6.6)
-            line([(0, sign * 5.5), (0, sign * (half - 4.0))])
-            for y in (half - 6.9, half - 10.5):
-                line([(-3.2, sign * y), (3.2, sign * y)])
-        # Home ⇱ (왼쪽): 왼쪽 위 모서리 ┌ + 그 모서리를 가리키는 대각선 화살표
-        # End ⇲ (오른쪽): 오른쪽 아래 모서리 ┘ + 그 모서리를 가리키는 대각선 화살표
-        u = 0.7071
-        for sx in (-1, 1):
-            cx = sx * r
-            corner = (cx + sx * g, sx * g)
-            arm = 2 * g * 0.8
-            line([(corner[0], corner[1] - sx * arm), corner, (corner[0] - sx * arm, corner[1])])
-            tip = (corner[0] - sx * 2.8, corner[1] - sx * 2.8)
-            tail = (cx - sx * g * 0.8, -sx * g * 0.8)
-            line([tail, (tip[0] - sx * 3.0, tip[1] - sx * 3.0)])
-            head(tip, (sx * u, sx * u), length=4.6, width=6.0)
-
-    img = img.resize((round(side * CURSOR_ICON_SS),) * 2, Image.LANCZOS)
-    out = Image.new("RGBA", img.size, (255, 255, 255, 0))
-    out.putalpha(img)
-    return out
-
-
-def cursor_icon_keys(kb: "Kbd75Layout") -> list[tuple[KeyDef, str]]:
-    """(키, 종류) 목록. 기본/Fn 페이지에서 커서 코드를 가진 라벨 키를 찾는다."""
-    out = []
-    for page in (kb.base, kb.fn or []):
-        for row in page:
-            for k in row:
-                kind = CURSOR_ICON_CODES.get(k.code or "")
-                if kind and k.label:
-                    out.append((k, kind))
-    return out
-
-
-def build_kbd75_assets(kb: Kbd75Layout, cell: float, base: float) -> tuple[list[BorderAsset], list[str]]:
-    """키마다 오버레이 자산을 만든다. 시프트 문자와 Fn 이 둘 다 있으면 시프트 상태용
-    (Fn 만 있는) 자산도 만든다."""
-    assets: list[BorderAsset] = []
-    warnings: list[str] = []
-    ts = text_sizes(base, OVERLAY_SS)
-    last_row = len(kb.base) - 1
-    for key in kb.keys:
-        bottom = key.row == last_row
-        w, h = key_box_w(key, cell), key_h_range(bottom)[0]
-        slicing = overlay_slicing(w, h)
-        img, _, warns = render_overlay(key, w * OVERLAY_SS, h * OVERLAY_SS, ts)
-        warnings += warns
-        assets.append(BorderAsset(key.asset_name, img, DEVICE_DPI * OVERLAY_SS, slicing))
-        if key.shifted and key.fn:
-            img, _, warns = render_overlay(key, w * OVERLAY_SS, h * OVERLAY_SS, ts, with_shifted=False)
-            warnings += warns
-            assets.append(BorderAsset(key.shifted_asset_name, img, DEVICE_DPI * OVERLAY_SS, slicing))
-        warnings += check_kbd75_key(key, cell, base, bottom)
-    return assets, warnings
-
-
-def kbd75_border_rules(kb: Kbd75Layout, layouts: list[str]) -> list[tuple[tuple[str, ...], str]]:
-    rules = []
-    for layout in layouts:
-        for key in kb.keys:
-            if key.selector is None or " " in key.selector[1]:
-                continue
-            rules.append((("layer", "1", "layout", layout, *key.selector), key.asset_name))
-            if key.shifted and key.fn:
-                rules.append(
-                    (("layer", "1", "layout", layout, "label", key.shifted), key.shifted_asset_name)
-                )
-    return rules
 
 
 # --------------------------------------------------------------------------
@@ -1570,7 +1144,7 @@ def draw_action_bar(img: Image.Image, scale: float) -> None:
 def draw_key_shape(draw, box, style: str, scale: float, state: str = "off") -> None:
     """앱 기본 스타일 + 이 테마의 기능키 배경을 키 상자(간격 제외)에 그린다.
 
-    레이어 -1 의 기능키 배경 위에 레이어 0 의 앱 기본 배경이 덮인다. 눌림/래치는
+    레이어 -1 의 기능키 배경 위에 레이어 0 의 앱 기본 배경이 덮인다. 눌림은
     keyboard_container_pressed, 잠김(StickyOn)은 secondary 다 (BasicThemeProvider.kt:256, 513).
     """
     x0, y0, x1, y1 = box
@@ -1625,13 +1199,12 @@ def paste_tinted(img: Image.Image, icon: Image.Image, side: int, xy, color) -> N
 
 
 def render_page(
-    page: list[list[KeyDef]], cell: float, path: Path, decorate=None, area_h: float = KB_AREA_H, bar: bool = True
+    page: list[list[KeyDef]], cell: float, path: Path, area_h: float = KB_AREA_H, bar: bool = True
 ) -> None:
     """레이아웃 한 페이지를 기기 화면처럼 그린다 (액션 바 + 키보드 영역).
 
     키마다 앱 기본 스타일 배경(+ 이 테마의 기능키 배경), 가운데 라벨/아이콘, 우상단 힌트를
-    KeyboardView 의 크기·위치 계산대로 그린다. decorate(kb, key, box) 가 있으면 그 뒤에
-    불러서 오버레이 같은 테마 요소를 얹게 한다.
+    KeyboardView 의 크기·위치 계산대로 그린다.
     """
     s = SS
     w = DEVICE_W * s
@@ -1674,46 +1247,20 @@ def render_page(
                 draw, box[2] - ts.hint_pad - size / 2, box[1] + ts.hint_pad + size / 2,
                 size, hint_fg, max(1, round(2 * s)),
             )
-        if decorate is not None:
-            decorate(kb, key, box)
 
     img.paste(kb.convert("RGB"), (0, top))
     save_downsampled(img, path)
 
 
 def render_states_preview(path: Path) -> None:
-    """기능키 상태 견본: 꺼짐 / 래치(눌림) / 잠김 Ctrl, 꺼짐 / 잠김 Shift, 눌린 Esc, 엔터."""
+    """기능키 상태 견본: 꺼짐 / 잠김 Shift, 눌린 Esc, 엔터."""
     keys = [
-        KeyDef(0, 0, 2, "functional", "c0", label="Ctrl"),
-        KeyDef(0, 1, 2, "functional", "c1", label="Ctrl", state="pressed"),
-        KeyDef(0, 2, 2, "functional", "c2", label="Ctrl", state="locked"),
-        KeyDef(0, 3, 2, "functional", "s0", icon="shift_key"),
-        KeyDef(0, 4, 2, "functional", "s1", icon="shift_key", state="locked"),
-        KeyDef(0, 5, 2, "functional", "e1", label="Esc", state="pressed"),
-        KeyDef(0, 6, 3, "action", "enter", icon="enter_key"),
+        KeyDef(0, 0, 2, "functional", "s0", icon="shift_key"),
+        KeyDef(0, 1, 2, "functional", "s1", icon="shift_key", state="locked"),
+        KeyDef(0, 2, 2, "functional", "e1", label="Esc", state="pressed"),
+        KeyDef(0, 3, 3, "action", "enter", icon="enter_key"),
     ]
     render_page([keys], DEVICE_W / 15, path, area_h=KB_TOP * 2 + KB_BOTTOM_KEY_H, bar=False)
-
-
-def render_kbd75_previews(kb: Kbd75Layout, assets: list[BorderAsset], cell: float, build_dir: Path) -> list[Path]:
-    overlays = {a.name: a for a in assets}
-    layout_keys = {k.selector: k for k in kb.keys if k.selector}
-
-    def decorate(img: Image.Image, key: KeyDef, box) -> None:
-        # 레이어 1 오버레이: 레이아웃 선택자가 이 키에 걸리면 그 자산을 9-patch 로 늘려 얹는다
-        owner = layout_keys.get(key.selector) if key.selector else None
-        if owner is None or owner.ident != key.ident:
-            return
-        asset = overlays[owner.asset_name]
-        bw, bh = round(box[2] - box[0]), round(box[3] - box[1])
-        img.alpha_composite(ninepatch_resize(asset.image, asset.slicing, bw, bh), (round(box[0]), round(box[1])))
-
-    out = [build_dir / "preview_kbd75.png"]
-    render_page(kb.base, cell, out[0], decorate)
-    if kb.fn is not None:
-        out.append(build_dir / "preview_kbd75_fn.png")
-        render_page(kb.fn, cell, out[1], decorate)
-    return out
 
 
 # --------------------------------------------------------------------------
@@ -1736,16 +1283,6 @@ def main() -> int:
         default=REPO / "qwerty_hacker.yml",
         help="미리보기만 그리는 보조 레이아웃. 테마에는 들어가지 않는다.",
     )
-    ap.add_argument(
-        "--kbd75-layout",
-        action="append",
-        default=None,
-        metavar="NAME",
-        help="qwerty_kbd75.yml 의 레이아웃 세트 이름. 지정하면 시프트 문자/Fn 기능 표시를 "
-        "테마에 넣고 build/preview_kbd75*.png 를 그린다. 없으면 만들지 않는다. "
-        "여러 번 지정 가능.",
-    )
-    ap.add_argument("--kbd75-yml", type=Path, default=REPO / "qwerty_kbd75.yml")
     ap.add_argument("--build-dir", type=Path, default=REPO / "build")
     ap.add_argument("--dist-dir", type=Path, default=REPO / "dist")
     ap.add_argument("--no-preview", action="store_true")
@@ -1758,7 +1295,6 @@ def main() -> int:
     args = ap.parse_args()
 
     layouts = args.layout or ["custom0"]
-    kbd75_layouts = args.kbd75_layout or []
     embed_font = not args.no_embed_font
 
     ensure_font()
@@ -1793,60 +1329,9 @@ def main() -> int:
     borders: list[BorderAsset] = [render_func_bg()]
     border_rules: list[tuple[tuple[str, ...], str]] = [(sel, FUNC_BG_ASSET) for sel in FUNC_BG_SELECTORS]
 
-    kb: Kbd75Layout | None = None
-    kbd75_assets: list[BorderAsset] = []
-    cursor_rules: list[tuple[tuple[str, ...], str]] = []
-    if kbd75_layouts:
-        kb = load_kbd75(args.kbd75_yml)
-        all_warnings += kb.warnings
-        if not kb.keys:
-            print(f"{args.kbd75_yml} 에서 시프트 문자나 Fn 기능이 있는 키를 찾지 못했다.", file=sys.stderr)
-            return 1
-        cell, base = kbd75_metrics(yaml.safe_load(args.kbd75_yml.read_text(encoding="utf-8"))["overrideWidths"])
-
-        # 커서 키 아이콘. 오버레이 겹침 검사가 이 아이콘을 가운데로 보도록 먼저 붙인다.
-        all_kbd75 = [k for page in (kb.base, kb.fn or []) for row in page for k in row]
-        ts1 = text_sizes(base)
-        for key, kind in cursor_icon_keys(kb):
-            name = f"kbd75_cursor_{kind}.png"
-            if name not in icons:
-                icons[name] = render_cursor_icon(kind, CURSOR_DESIGN_PX)
-            key.theme_icon = icons[name]
-            need = app_theme_icon_side(key, key_box_w(key, cell), ts1)
-            if need > icons[name].width:
-                all_warnings.append(
-                    f"KBD75 {key.label}: 아이콘이 {need}px 로 그려져야 하는데 PNG 가 {icons[name].width}px 라 "
-                    "고유 크기에 걸린다. CURSOR_ICON_SS 를 올릴 것."
-                )
-            for layout in kbd75_layouts:
-                cursor_rules.append((("layout", layout, "label", key.label), name))
-            for other in all_kbd75:
-                if other is not key and (other.label == key.label or other.hint == key.label):
-                    all_warnings.append(
-                        f"KBD75 커서 아이콘 선택자 label {key.label} 가 r{other.row}c{other.col} "
-                        f"({other.ident}) 의 라벨이나 힌트에도 걸린다"
-                    )
-        if not cursor_icon_keys(kb):
-            all_warnings.append("KBD75 커서 키(!code/key_cursor_pad, key_nav_pad)를 찾지 못했다")
-
-        kbd75_assets, warnings = build_kbd75_assets(kb, cell, base)
-        all_warnings += warnings
-        borders += kbd75_assets
-        border_rules += kbd75_border_rules(kb, kbd75_layouts)
-
-        # 딩굴 아이콘 선택자는 라벨로 키를 지목하므로, 레이아웃 이름이 같으면 KBD75 의 같은
-        # 라벨 키(`.` `/` …)에도 딩굴 아이콘이 씌워진다.
-        kbd75_labels = {k.label for page in (kb.base, kb.fn or []) for row in page for k in row}
-        for layout in sorted(set(layouts) & set(kbd75_layouts)):
-            for label in sorted({k.label for k in keys} & kbd75_labels):
-                all_warnings.append(
-                    f"레이아웃 {layout} 에 딩굴과 KBD75 가 둘 다 라벨 {label!r} 를 쓴다. "
-                    "KBD75 키에 딩굴 아이콘이 씌워진다. --layout 과 --kbd75-layout 을 다르게 줄 것."
-                )
-
     icon_rules = [
         (("layout", layout, "label", key.label), key.asset_name) for layout in layouts for key in keys
-    ] + cursor_rules
+    ]
     theme_txt = build_theme_txt(icon_rules, list(icons), border_rules, borders, embed_font)
     (theme_dir / "theme.txt").write_text(theme_txt, encoding="utf-8")
     for name, img in icons.items():
@@ -1858,16 +1343,10 @@ def main() -> int:
     version_blob = struct.pack("<bq", 1, int(time.time() * 1000))
     (theme_dir / "FUTOKeyboardTheme_Version").write_bytes(version_blob)
 
-    # 딩굴 flick 키, KBD75 오버레이 키, 기능키 배경이 전부 선택자와 자산을 받았는지 zip 을
-    # 만들기 전에 확인한다.
+    # 딩굴 flick 키와 기능키 배경이 전부 선택자와 자산을 받았는지 zip 을 만들기 전에 확인한다.
     files = set(icons) | {b.name for b in borders}
     problems = verify_theme_txt(theme_txt, "icon", icon_rules, files)
     problems += verify_theme_txt(theme_txt, "border", border_rules, files)
-    if kb is not None:
-        selected = {(r[0][4], r[0][5]) for r in border_rules if r[0][:2] == ("layer", "1")}
-        for key in kb.keys:
-            if key.selector and key.selector not in selected:
-                problems.append(f"KBD75 r{key.row}c{key.col} ({key.ident}) 에 선택자가 없다")
     if problems:
         print("theme.txt 검증 실패:", file=sys.stderr)
         for p in problems:
@@ -1895,8 +1374,6 @@ def main() -> int:
             previews.append(args.build_dir / "preview_qwerty.png")
         render_states_preview(args.build_dir / "preview_states.png")
         previews.append(args.build_dir / "preview_states.png")
-        if kb is not None:
-            previews += render_kbd75_previews(kb, kbd75_assets, cell, args.build_dir)
 
     print(
         f"flick 키 {len(keys)}개, 레이아웃 {', '.join(layouts)}, "
@@ -1906,15 +1383,6 @@ def main() -> int:
         dirs = " ".join(f"{n[0]}:{v}" for n, v in key.directions.items())
         print(f"  r{key.row}c{key.col}  label {key.label!r:8} {dirs}")
     print(f"\n기능키 배경: {', '.join(' '.join(s) for s in FUNC_BG_SELECTORS)}")
-    if kb is not None:
-        print(f"\nKBD75 키 {len(kb.keys)}개, 레이아웃 {', '.join(kbd75_layouts)}")
-        for key in kb.keys:
-            sel = " ".join(key.selector) if key.selector else "-"
-            shifted = f"  shift {key.shifted}" if key.shifted else ""
-            fn = f"  fn {key.fn}" if key.fn else ""
-            print(f"  r{key.row}c{key.col}  {sel:16}{shifted}{fn}")
-    for tokens, name in cursor_rules:
-        print(f"  아이콘  {' '.join(tokens):32} {name}")
     print(f"\n{zip_path}  ({zip_path.stat().st_size / 1024:.0f} KB)")
     for p in previews:
         print(p)

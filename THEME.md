@@ -2,9 +2,7 @@
 
 `dingul.yml` 의 flick 키에 상/하/좌/우로 입력되는 문자를 키 위에 표시하는 FUTO Keyboard 커스텀 테마.
 색은 Atom One Dark 팔레트(`bg #282c34`, `fg #abb2bf`, 액센트 `blue #61afef`), 폰트는 Pretendard GOV.
-모든 레이아웃의 기능키(Esc, Ctrl, Shift, Backspace …)에는 배경을 깐다 ([아래](#기능키-배경)).
-같은 테마에 `qwerty_kbd75.yml` 의 시프트 문자와 Fn 기능 표시도 넣을 수 있다
-([아래](#kbd75-시프트-문자와-fn-기능-qwerty_kbd75yml)).
+모든 레이아웃의 기능키(Shift, Backspace, `?123` …)에는 배경을 깐다 ([아래](#기능키-배경)).
 
 ```
 uv run tools/build_theme.py --layout custom0
@@ -19,9 +17,8 @@ uv run tools/build_theme.py --layout custom0
 | `dist/i.nesswit.DingulFlick.zip` | 폰으로 옮겨 임포트할 테마 (약 6.9MB — 대부분 폰트) |
 | `build/preview.png` | 딩굴 미리보기. 설치했을 때 기기 화면처럼 그린다 |
 | `build/preview_qwerty.png` | `qwerty_hacker.yml` 미리보기 (README 용) |
-| `build/preview_states.png` | 기능키 상태 견본: 꺼짐 / 래치 / 잠김 Ctrl, 꺼짐 / 잠김 Shift, 눌린 Esc |
-| `build/preview_kbd75.png` / `preview_kbd75_fn.png` | KBD75 기본 / Fn 페이지. `--kbd75-layout` 을 줬을 때만 만든다 |
-| `build/theme/` | zip 에 들어간 원본 파일들 (theme.txt, 딩굴 아이콘 15개, 기능키 배경 1개, KBD75 오버레이 41개, KBD75 커서 키 아이콘 2개) |
+| `build/preview_states.png` | 기능키 상태 견본: 꺼짐 / 잠김 Shift, 눌린 Esc, 엔터 |
+| `build/theme/` | zip 에 들어간 원본 파일들 (theme.txt, 딩굴 아이콘 15개, 기능키 배경 1개) |
 
 빌드 산출물은 gitignore 대상이고, README 에 띄우는 미리보기 두 장만 예외로 커밋한다.
 폰으로 옮길 zip 은 그때그때 빌드해서 쓴다.
@@ -65,13 +62,6 @@ uv run tools/build_theme.py --layout custom1
 
 ```
 uv run tools/build_theme.py --layout custom0 --layout custom1
-```
-
-KBD75 레이아웃도 쓴다면 그 번호를 `--kbd75-layout` 으로 따로 준다. 에뮬레이터처럼 KBD75 가
-`custom0` 이고 딩굴이 없으면, 딩굴 선택자는 쓰지 않는 번호로 비켜 둔다.
-
-```
-uv run tools/build_theme.py --layout custom9 --kbd75-layout custom0
 ```
 
 힌트가 아예 안 보이면 레이아웃 이름이 틀린 것이다. 선택자가 잘못되면 그 항목만 조용히 무시되고
@@ -157,7 +147,7 @@ theme.zip
 
 함정 세 가지.
 
-- **공백으로 split** 하므로 라벨에 공백이 있으면 지목할 수 없다. 딩굴과 KBD75 레이아웃은 해당 없음.
+- **공백으로 split** 하므로 라벨에 공백이 있으면 지목할 수 없다. 딩굴 레이아웃은 해당 없음.
   인자 쪽은 소문자로 바꾸지 않으므로 `\` `"` `'` 같은 라벨도 그대로 쓰면 된다. TOML 문자열 안에서는
   `\\` `\"` 로 이스케이프해야 하고, 빌더가 `json.dumps` 로 처리한다.
 - `label` 은 `key.label` 과 비교한다. `primary: "ㅣ·|ㅣ"` 처럼 `라벨|코드` 형식이면 **라벨 부분만**
@@ -166,11 +156,7 @@ theme.zip
 - **아이콘 선택자는 힌트에도 매칭된다.** 앱은 같은 `[[matchrules.icon]]` 목록을 힌트 아이콘을 찾는
   데도 쓰고 (`AdvancedThemeCustomizer.kt:86`), 이때 `label` 은 키의 힌트 라벨과 비교한다
   (`KeyedBitmaps.kt` `matchesHint`). 즉 같은 레이아웃에 힌트가 `1` 인 키가 있으면 그 힌트가 `1` 키
-  아이콘으로 바뀐다. 키 배경(`[[matchrules.border]]`)은 힌트와 비교하지 않으므로 KBD75 오버레이는
-  해당 없다.
-- **스타일 키워드는 원래 스타일을 본다.** `functional` 은 `key.visualStyle` 과 비교하는데, 잠긴
-  수정키는 그릴 때만 StickyOn 으로 바뀐다 (`Key.kt` `drawnVisualStyle`). 그래서 선택자로는 잠긴 Ctrl 과
-  꺼진 Ctrl 을 구분할 수 없다. 기능키 배경을 레이어 -1 에 두는 이유다 ([아래](#기능키-배경)).
+  아이콘으로 바뀐다. 키 배경(`[[matchrules.border]]`)은 힌트와 비교하지 않는다.
 
 같은 선택자가 둘 이상이면 **먼저 나온 항목만** 쓰인다 (`CachedKeyedMatcher.find`).
 
@@ -253,11 +239,8 @@ qwerty 를 기본 크기로 두는 쪽을 택했다. 딩굴 아이콘은 키 폭
 | `FONT_URL` / `FONT_WEIGHT` | 폰트와 가변축 weight (45~930) |
 | `COLORS` | 44개 색 전부. One Dark 팔레트가 들어 있다 |
 | `FUNC_BG_TINT` | 기능키 배경색 (팔레트 이름). [아래](#기능키-배경) 참고 |
-| `DEVICE_*` / `KEY_GAP_*` / `KB_*` / `ACTION_BAR_*` | 기기 실측값. 미리보기와 KBD75 오버레이 크기가 여기서 나온다 |
+| `DEVICE_*` / `KEY_GAP_*` / `KB_*` / `ACTION_BAR_*` | 기기 실측값. 미리보기 크기가 여기서 나온다 |
 | `KEY_*_RATIO` / `KEY_HINT_PADDING_DP` / `*_RADIUS_DP` | 앱 기본 테마의 글자 비율, 힌트 여백, 키 모서리 |
-| `KBD75_KEY_H_RANGE` | KBD75 오버레이를 굽는 키 높이(최솟값)와 겹침 검사 범위 |
-| `KBD75_SHIFT_SCALE` | KBD75 시프트 문자 크기 (힌트 크기 대비) |
-| `KBD75_MIN_GAP` | KBD75 글자끼리 최소 간격. 이보다 가까우면 경고 |
 
 빌더는 글자가 안전 영역을 벗어나거나 가운데 글자와 겹치면 경고를 낸다. 경고 없이 끝나면 잘린
 글자는 없다. 색을 바꿨다면 `check_contrast()` 가 앱과 같은 기준(`Toml.kt:248`, 색 쌍 8개의 휘도차
@@ -274,8 +257,8 @@ qwerty 를 기본 크기로 두는 쪽을 택했다. 딩굴 아이콘은 키 폭
 
 ## 기능키 배경
 
-`auto_borders = false` 이면 앱은 기능키(Functional 스타일: Esc, Tab, Ctrl, Fn, Super, Alt, Shift,
-Backspace, 언어 전환, `?123` …)에 배경을 그리지 않는다 (`BasicThemeProvider.kt:341`). 글자 키와
+`auto_borders = false` 이면 앱은 기능키(Functional 스타일: Shift, Backspace, 언어 전환,
+`?123` …)에 배경을 그리지 않는다 (`BasicThemeProvider.kt:341`). 글자 키와
 구분이 안 돼서, 테마가 `[[matchrules.border]]` 로 둥근 사각형을 깐다.
 
 ```toml
@@ -288,160 +271,28 @@ name = "func_bg.png"                  # 96px 흰 둥근 사각형, 모서리 36p
 target_density = 640
 background_tint = "keyboard_container"  # #3a3f4b. 흰 이미지에 MULTIPLY 로 색을 입힌다
 foreground_tint = "#00000000"         # 이 레이어에서는 글자를 그리지 않는다
-padding = [0.0, 0.0, 1.0, 1.0]        # 여백 없음 (오른쪽/아래는 1.0 이 0 이다, Toml.kt:392)
+padding = [0.0, 0.0, 1.0, 1.0]        # 여백 없음 (오른쪽/아래는 1.0 이 0 이다, Toml.kt:385-386)
 slicing = [0.4, 0.4, 0.6, 0.6]        # 모서리는 늘리지 않는다
 ```
 
-**레이어 -1 에 두는 게 핵심이다.** 수정키(Ctrl 등)는 세 상태가 있고, 앱은 이걸 배경으로 구분한다.
+**레이어 -1 에 두는 게 핵심이다.** 레이어 0 에 테마 배경이 걸리면 앱은 키의 기본 배경 대신 그걸
+쓰므로 (`AdvancedThemeCustomizer.kt:145`) 누를 때의 하이라이트(`Key.kt:367` `selectBackground`)가
+사라진다. 레이어는 오름차순으로 그려지므로 (`KeyboardView.java:325`) 레이어 -1 에 깔면 그 위에
+레이어 0 의 앱 기본 배경이 덮인다.
 
 | 상태 | 앱이 그리는 방식 | 이 테마에서 보이는 모습 |
 |---|---|---|
-| 꺼짐 | Functional 스타일 (배경 투명) | 레이어 -1 의 `keyboard_container` (#3a3f4b) + 글자 `#abb2bf` |
-| 래치 (한 번) | pressed 로 그림 (`Key.kt` `pressed`) | `keyboard_container_pressed` (#4b5263) + 밝은 글자 `#e6e9ef` |
-| 잠김 | StickyOn 스타일로 그림 (`drawnVisualStyle`) | `secondary` 보라 (#c678dd) + 어두운 글자 `#21252b` |
+| 꺼짐 (Shift 는 한 번 누른 상태도) | Functional 스타일 (배경 투명) | 레이어 -1 의 `keyboard_container` (#3a3f4b) + 글자 `#abb2bf` |
+| 눌림 | Functional 의 눌림 배경 (`BasicThemeProvider.kt:256`) | `keyboard_container_pressed` (#4b5263) + 밝은 글자 `#e6e9ef` |
+| Shift 잠김 | StickyOn 스타일 (`BasicThemeProvider.kt:513`) | `secondary` 보라 (#c678dd) + 어두운 글자 `#21252b` |
 
-선택자의 `functional` 은 원래 스타일만 보므로 레이어 0 에 배경을 두면 세 상태 모두 같은 배경이
-되어 버린다. 레이어는 오름차순으로 그려지므로 (`KeyboardView.java:325`) 레이어 -1 에 깔면 그 위에
-레이어 0 의 앱 기본 배경이 덮이고, 래치와 잠김은 앱 기본 테마와 같은 방식으로 보인다. Shift 는
-꺼짐/한 번이 Functional, 잠김이 StickyOn 이라 (`TemplateKeys.kt:44`) 같은 규칙으로 처리된다. 일반 키를
-누를 때의 하이라이트와 엔터(Action, `primary` 알약), 스페이스바(`keyboard_container_pressed` 알약,
+Shift 는 꺼짐/한 번이 Functional, 잠김이 StickyOn 이다 (`TemplateKeys.kt:44-76`). 스타일 키워드는
+`key.visualStyle` 과 비교하므로 (`KeyedBitmaps.kt:63`) 잠긴 Shift 에는 `functional` 규칙이 걸리지 않고
+앱 기본 StickyOn 배경이 그대로 보인다. 일반 키를 누를 때의 하이라이트와 엔터(Action, `primary` 알약), 스페이스바(`keyboard_container_pressed` 알약,
 48dp)는 앱 기본 그대로다. `build/preview_states.png` 가 이 상태들을 그린 견본이다.
 
 색은 팔레트 값을 그대로 쓰므로 `COLORS` 를 바꿨다면 대비 검사(`check_contrast()`)만 다시 통과하면
 된다. 이번 변경에서 팔레트는 바꾸지 않았다.
-
----
-
-## KBD75 시프트 문자와 Fn 기능 (`qwerty_kbd75.yml`)
-
-실물 키캡처럼 키마다 **시프트 문자를 우상단, Fn 기능을 우하단**에 늘 보이게 한다. 가운데 라벨과
-Tab/Backspace 아이콘은 앱이 평소대로 그린다.
-
-```
-uv run tools/build_theme.py --layout custom9 --kbd75-layout custom0
-```
-
-`--kbd75-layout` 은 KBD75 가 몇 번째 커스텀 레이아웃인지다 (`--layout` 과 같은 규칙, 여러 번 지정 가능).
-주지 않으면 KBD75 표시는 만들지 않는다. 딩굴과 같은 이름을 주면 딩굴 아이콘 선택자(`label .` 등)가
-KBD75 의 같은 라벨 키에도 걸리므로 빌더가 경고한다.
-
-yaml 에는 `hint` 가 없어야 한다. 앱 힌트는 우상단에 그려져서 시프트 문자와 겹친다 (있으면 경고).
-
-### 키 목록은 yaml 에서 뽑는다
-
-- **시프트 문자**: `rows`(기본 페이지)의 `type: case` 키 중 normal 과 shifted 가 둘 다 한 글자이고 서로
-  다른 키. `%|%` 같은 스펙은 라벨 부분만 쓰고, `|` 하나짜리 스펙은 앱처럼 라벨 `|` 로 읽는다.
-- **Fn 기능**: 기본 페이지와 Fn 페이지(`altPages[0]`)를 같은 줄·같은 자리끼리 비교해서 스펙이 다르면
-  Fn 페이지 키의 라벨이 Fn 기능이다. 줄이나 키 수가 다르면 경고한다.
-
-지금은 24개 키가 나온다.
-
-```
-1 ! F1 · 2 @ F2 · … · 0 ) F10 · - _ F11 · = + F12 · \ | PrtSc · ` ~ Ins
-Tab - Caps · [ { ScrLk · ] } Pause · Backspace - Del
-; : · ' " NumLk
-, < · . > · / ?
-Arrows - Nav
-```
-
-### 선택자
-
-키 배경 규칙을 레이어 1 에 둔다. 라벨이 있는 키는 라벨로, 아이콘 키는 아이콘 ID 로 지목한다.
-
-```
-layer 1 layout custom0 label 1            # case 키 (기본 상태 라벨)
-layer 1 layout custom0 label !            # 같은 키의 시프트 상태 (Fn 표시만 있는 자산)
-layer 1 layout custom0 icon tab_key       # Tab   (스펙 !icon/tab_key)
-layer 1 layout custom0 icon delete_key    # Backspace
-layer 1 layout custom0 label Arrows       # 커서 키
-```
-
-- `icon` 토큰은 `key.iconOverride ?: key.iconId` 와 비교한다 (`KeyedBitmaps.kt:61`). 아이콘 ID 는
-  `!icon/` 뒤의 이름이다 (`KeySpecParser.java:238`).
-- 선택자는 레이아웃 전체에 걸린다. Fn 페이지의 Caps/Del/Nav 는 라벨 키라 아이콘 선택자에 안 걸리고,
-  F1 같은 키도 라벨이 달라서 안 걸린다. Fn 페이지의 `;` `,` `.` `/` 는 기본 페이지와 같은 키라 같은
-  오버레이(시프트 문자만)가 붙고, 그게 맞다. 빌더는 다른 키에 걸리는 선택자가 있으면 경고한다.
-- 시프트 상태에서는 case 키의 라벨이 `!` 처럼 바뀌어 `label 1` 이 안 걸린다. 그래서 Fn 기능이 있는
-  case 키는 시프트 라벨로 Fn 표시만 있는 자산을 하나 더 건다. 가운데의 `!` 는 앱이 그린다.
-
-### 커서 키 아이콘 (Arrows / Nav)
-
-커서 키(`!code/key_cursor_pad`, 라벨 `Arrows`)와 Fn 페이지의 같은 자리(`!code/key_nav_pad`, 라벨
-`Nav`)는 키를 끄는 방향으로 입력하는 키라, 라벨 대신 방향별 기호를 십자로 놓은 아이콘을 씌운다.
-라벨을 바꿔야 하므로 여기만은 아이콘(`[[matchrules.icon]]`)을 쓴다. 테마가 없으면 yaml 의 라벨이
-그대로 보인다. 키는 코드로 찾고 라벨은 yaml 에서 읽는다.
-
-```
-layout custom0 label Arrows   -> kbd75_cursor_arrows.png   ↑ ↓ ← → 화살표 넷 (D-pad)
-layout custom0 label Nav      -> kbd75_cursor_nav.png      위 PgUp ⇞, 아래 PgDn ⇟, 왼쪽 Home ⇱, 오른쪽 End ⇲
-```
-
-- **벡터로 그린다.** Pretendard 에 ⇞ ⇟ 는 있지만 ⇱ ⇲ 는 없다. 글꼴을 섞으면 획 굵기가 달라져서 넷 다
-  같은 굵기(2.4px)의 선과 채운 삼각형으로 그린다. ⇞ ⇟ 는 화살표 줄기를 가로지르는 짧은 두 줄,
-  ⇱ ⇲ 는 모서리 괄호와 그 모서리를 가리키는 대각선 화살표다.
-- **크기는 레이아웃의 `labelFlags` 가 정한다.** 아이콘 한 변은 `1.75 x textSize` 이고, textSize 는
-  `Key.selectTextSize` 규칙을 따른다 (`followKeyLetterRatio` → mLetterSize, `followKeyLargeLetterRatio`
-  → mLargeLetterSize, `followKeyLabelRatio` → mLabelSize, 플래그가 없으면 한 글자·Normal 스타일은
-  mLetterSize, 나머지는 mLabelSize). `qwerty_kbd75.yml` v0.0.5 는 두 키에 `followKeyLetterRatio` 를
-  줘서 47px → **82px** 이다 (플래그가 없으면 24px → 42px). 빌더와 미리보기는 yaml 의 플래그를 읽어 같은
-  크기로 계산한다 (`key_text_size()`).
-- 도형은 42px 기준으로 설계했고 (`CURSOR_DESIGN_PX`) PNG 는 그 3배(126px)다. 82px 로 그려도 PNG
-  고유 크기에 걸리지 않고, 앱의 bilinear 축소도 1.5배 정도라 획이 깨지지 않는다. 필요한 크기가 PNG 보다
-  커지면 빌더가 경고한다.
-- **색은 옆 라벨과 같다.** 아이콘은 키의 글자색(`on_keyboard_container`)으로 단색 틴트되고, 눌렀을 때도
-  라벨과 같은 색으로 바뀐다. PNG 는 흰색 + 알파다.
-- 기본 페이지 커서 키의 우하단 Fn 표시는 텍스트 `Nav` 그대로 둔다. Nav 기호를 힌트 크기(21px)로 줄이면
-  기호 하나가 5px 남짓이라 알아볼 수 없었다.
-- 아이콘 선택자는 힌트에도 매칭되므로 (`matchesHint`), 같은 레이아웃에 라벨이나 힌트가 `Arrows` / `Nav`
-  인 다른 키가 있으면 빌더가 경고한다. 지금은 없다. 오버레이(`layer 1 … label Arrows`)는 아이콘이
-  라벨을 대체해도 `key.label` 이 그대로라 계속 걸린다.
-- `followKeyLetterRatio` 때문에 테마가 없을 때는 `Arrows` `Nav` 라벨도 47px 로 커진다
-  (`autoXScale` 로 키 폭의 0.9 에 맞게 가로가 줄어든다).
-
-### 왜 아이콘이 아니라 키 배경인가
-
-아이콘은 한 변이 `min(키 폭, 1.75 x textSize)` 인 정사각형이고 키 세로 가운데에 놓인다. 이 레이아웃에서
-글자 키는 60x60, Tab 같은 1.5칸 키는 42x42 다 (아래 수치). 높이 114 짜리 키의 위아래 27px 에는 닿지
-못해서 모서리에 글자를 둘 수 없고, 아이콘이 라벨을 대체하므로 가운데 라벨과 Tab 아이콘까지 다시 그려야
-한다. 키 배경은 키 전체에 9-patch 로 깔리고 라벨은 앱이 그대로 그린다.
-
-딩굴에서 배경을 피한 이유(늘어나는 구간에 글자가 걸린다)도 여기선 문제가 없다. 글자가 우상단·우하단
-모서리에만 있어서, 늘리는 구간을 **왼쪽 가장자리 1~4px 세로 띠와 가운데 6px 가로 띠**로 잡으면 글자는
-늘어나지 않는다 (`overlay_slicing()`). 키가 넓어지면 왼쪽 띠가, 높아지면 가운데 띠가 늘어난다.
-
-오버레이는 레이어 1 이라 레이어 0(앱 배경과 라벨) 위에 그려진다. 눌림 하이라이트에 가려지지 않는다.
-`foreground_tint` 알파 0 으로 이 레이어에서는 글자를 다시 그리지 않는다. 오버레이 PNG 는 글자색
-(`on_surface_variant`, 앱 힌트 색과 같다)으로 직접 칠하고 `background_tint` 를 흰색으로 둬서 틴트하지
-않는다 (`NinePatchBuilder.kt:144`).
-
-### 크기와 위치
-
-에뮬레이터 스크린샷 실측: 칸 폭 72 (= 0.0666 x 1080), 키 배경 폭 60 (가로 간격 12), 키 높이 114,
-줄 간격 137.5, 아래 줄 키 높이 137. 글자 크기 기준은 `min(가장 흔한 키 폭 72, 키 높이 114) = 72` 라서
-
-| | 크기 | 비고 |
-|---|---|---|
-| 가운데 한 글자 라벨 | 47px (0.66 x 72) | 앱이 그림 |
-| 여러 글자 라벨 (Esc, Arrows) | 24px (0.34 x 72) | 앱이 그림 |
-| 힌트 크기 | 21px (0.30 x 72) | Fn 기능에 쓴다 |
-| 시프트 문자 | 24px (힌트의 1.15 배) | 기호는 잉크가 작아서 조금 키웠다 (`KBD75_SHIFT_SCALE`) |
-
-- 우상단: 앱 힌트 계산 그대로다. 가로 중심 = 키 폭 - 여백(2.5dp) - max(`8` 폭, 글자 폭)/2,
-  baseline = ascent + 여백 (`KeyboardView.java:566-567`). 굵기는 `weight_hints`(500).
-- 우하단: 같은 가로 계산, 세로는 위쪽을 뒤집었다 (키 윗변~대문자 윗변 간격 = baseline~키 아랫변 간격).
-  `PrtSc` `ScrLk` `Pause` `NumLk` 처럼 긴 이름은 키 안쪽 폭(키 폭 - 여백 x 2)에 맞게 줄인다.
-- 오버레이는 기기 px 의 3배(`OVERLAY_SS`)로 그리고 `target_density` 를 420 x 3 = 1260 으로 둔다.
-  높이는 `KBD75_KEY_H_RANGE` 의 최솟값(100, 아래 줄 키는 137/114 배인 120)으로 굽고 기기에서 늘린다. 9-patch 를 줄이면 전체가 균일하게
-  작아지기 때문이다 (`NinePatchUniformCornerDrawable`).
-
-빌더는 키 높이 100 과 130 두 경우(아래 줄 키는 120 과 156)에 대해 가운데(앱 라벨·아이콘 흉내), 우상단, 우하단, 앱 힌트를 실제로
-그려 보고 `KBD75_MIN_GAP`(2px)보다 가까우면 경고한다. 키 밖으로 잘려도 경고한다. 마지막으로
-`theme.txt` 를 다시 읽어서 뽑은 키 전부와 기능키 배경에 선택자와 자산이 들어갔는지 확인하고, 빠졌으면
-zip 을 만들지 않고 멈춘다.
-
-**키 크기는 1080x2400 에뮬레이터(420dpi 가정) 실측이다.** 다른 기기에서는 칸 폭과 dpi 가 달라서 글자
-크기가 앱 힌트와 조금 어긋날 수 있다. 그 기기에서 스크린샷을 찍어 `DEVICE_*` `KEY_GAP_*` `KB_*` 를 다시
-재면 오버레이와 미리보기가 같이 따라온다.
 
 ---
 
@@ -452,17 +303,12 @@ zip 을 만들지 않고 멈춘다.
 2. **테마에 종속된다.** 다른 테마로 바꾸면 힌트가 통째로 사라진다.
 3. **레이아웃 이름에 종속된다.** 커스텀 레이아웃을 추가/삭제해서 순서가 바뀌면 다시 빌드해야 한다.
 4. **다른 사용자나 일본어 플릭 자판은 혜택을 못 받는다.** 앱 기능으로 만들 경우와의 차이.
-5. **KBD75 표시도 yaml 과 자동 동기화되지 않는다.** `qwerty_kbd75.yml` 을 고쳤으면 다시 빌드해야 한다.
-   오버레이는 한 가지 기기 크기로 구워지므로, 실측값과 많이 다른 기기에서는 글자 크기가 앱 힌트와
-   어긋날 수 있다.
-6. **잠긴 수정키는 선택자로 지목할 수 없다.** 잠김 표시는 앱 기본 스타일(`secondary`)에 맡긴다.
-   색을 바꾸려면 팔레트의 `secondary` / `on_secondary` 를 바꿔야 하고, 그러면 다른 곳의 색도 같이 바뀐다.
 
 ---
 
 ## 참고 코드 위치
 
-조사 기준: `futo-org/android-keyboard` master (`94aea3d4a`). 기능키 배경과 KBD75 관련 줄 번호는 `feat/avf-soft-key-passthrough` (`8a3959aae`) 기준이다.
+조사 기준: `futo-org/android-keyboard` master (`94aea3d4a`).
 
 | 내용 | 위치 |
 |---|---|
@@ -475,11 +321,12 @@ zip 을 만들지 않고 멈춘다.
 | 글자/힌트 비율 | `res/values/config.xml:51-64`, `res/values/themes-lxx.xml:32` |
 | 힌트 아이콘 매칭 | `latin/uix/theme/AdvancedThemeCustomizer.kt:86`, `KeyedBitmaps.kt` `matchesHint` |
 | 라벨 파싱 (세로 막대 단독) | `keyboard/internal/KeySpecParser.java:98` |
-| 키 배경 디코딩 (border 자산) | `latin/uix/theme/serialization/Toml.kt:153`, `:178`, `:371` |
-| 9-patch 생성 / 틴트 | `latin/uix/utils/NinePatchBuilder.kt:142`, `:202` |
+| 키 배경 디코딩 (border 자산) | `latin/uix/theme/serialization/Toml.kt:151`, `:175`, `:364` |
+| 9-patch 생성 / 틴트 | `latin/uix/utils/NinePatchBuilder.kt:154`, `:140` |
 | 레이어별 그리기 | `keyboard/KeyboardView.java:317-330`, `AdvancedThemeCustomizer.kt:123` |
-| 기본 키 스타일 (auto_borders) | `latin/uix/BasicThemeProvider.kt:320-535` |
-| 수정키 상태 (래치/잠김) | `keyboard/Key.kt` `modifierState`, `drawnVisualStyle` (feat/avf-soft-key-passthrough) |
+| 기본 키 스타일 (auto_borders) | `latin/uix/BasicThemeProvider.kt:341`, `:434-535` |
+| 키 기본 배경 선택 (눌림 포함) | `keyboard/Key.kt:367` `selectBackground` |
+| Shift 템플릿 키 (잠김 = StickyOn) | `v2keyboard/TemplateKeys.kt:44-76` |
 | 아이콘 크기 계산 | `keyboard/KeyboardView.java:596` |
 | zip 테마 저장/로드/임포트 | `latin/uix/theme/ZipThemes.kt` |
 | TOML 테마 스키마 / 검증 | `latin/uix/theme/serialization/Toml.kt:55`, `:248` |
